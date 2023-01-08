@@ -200,9 +200,9 @@ Opisati ArangoDB Master/follower vezu u clusteru i Leader/follower vezu za repli
 
 Opisati ArangoDB cluster starter.
 
-Navesti više načina za postaviti cluster (manualno, starter, ...)
+Navesti više načina za postaviti cluster (manualno, starter, ...). Mi ćemo koristiti starter.
 
-Opisati konfiguraciju koju ćemo koristiti
+Opisati konfiguraciju koju ćemo koristiti.
 
 Ponovimo test:
 
