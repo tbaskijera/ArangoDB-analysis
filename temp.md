@@ -78,3 +78,13 @@ docker run  -e ARANGO_ROOT_PASSWORD=password  -p 8529:8529  -v /arangodb:/var/li
 
 ```
 <!-->
+
+172.17.0.1
+
+docker volume create arangodb2
+docker run -it --name=adb2 --rm -p 8528:8528 \
+    -v arangodb2:/data \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    arangodb/arangodb-starter \
+    --starter.address=$IP \
+    --starter.join 172.17.0.1:8528
