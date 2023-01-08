@@ -88,3 +88,12 @@ docker run -it --name=adb2 --rm -p 8528:8528 \
     arangodb/arangodb-starter \
     --starter.address=$IP \
     --starter.join 172.17.0.1:8528
+
+arangobench \
+--server.endpoint tcp://172.17.0.1:8549 \
+--number-of-shards 10 \
+--replication-factor 3 \
+--test-case crud \
+--requests 1500000 \
+--complexity 10 \
+--histogram.generate

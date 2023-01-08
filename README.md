@@ -58,8 +58,7 @@ Tada pokrećemo `arangobench` s sljedećim parametrima i vrijednostima:
 - `histogram.generate` - generiranje histograma
 
 ```shell
-/ # arangobench --test-case crud --requests 1500000 --complexity 10 --histogra
-m.generate
+/ # arangobench --test-case crud --requests 1500000 --complexity 10 --histogram.generate
 Please specify a password: 
 2023-01-08T10:47:00Z [441] INFO [69091] {bench} Running test case 'crud': will perform a mix of insert, update, get and remove operations for documents. 20% of the operations will be single-document inserts, 20% of the operations will be single-document updates, 40% of the operations are single-document read requests, and 20% of the operations will be single-document removals. There will be a total of --requests operations. The --complexity parameter can be used to control the number of attributes for the inserted and updated documents.
 2023-01-03T17:49:57Z [350] INFO [a6905] {bench} starting threads...
@@ -204,6 +203,200 @@ Opisati ArangoDB cluster starter.
 Navesti više načina za postaviti cluster (manualno, starter, ...)
 
 Opisati konfiguraciju koju ćemo koristiti
+
+Ponovimo test:
+
+```shell
+/ # arangobench \
+> --server.endpoint tcp://172.17.0.1:8549 \
+> --number-of-shards 10 \
+> --replication-factor 3 \
+> --test-case crud \
+> --requests 1500000 \
+> --complexity 10 \
+> --histogram.generate
+Please specify a password: 
+2023-01-08T18:57:34Z [104] INFO [69091] {bench} Running test case 'crud': will perform a mix of insert, update, get and remove operations for documents. 20% of the operations will be single-document inserts, 20% of the operations will be single-document updates, 40% of the operations are single-document read requests, and 20% of the operations will be single-document removals. There will be a total of --requests operations. The --complexity parameter can be used to control the number of attributes for the inserted and updated documents.
+2023-01-08T18:57:34Z [104] INFO [a6905] {bench} starting threads...
+2023-01-08T18:57:36Z [104] INFO [a6905] {bench} executing tests...
+2023-01-08T18:57:51Z [104] INFO [c3604] {bench} number of operations: 75000
+2023-01-08T18:58:07Z [104] INFO [c3604] {bench} number of operations: 150000
+2023-01-08T18:58:22Z [104] INFO [c3604] {bench} number of operations: 225000
+2023-01-08T18:58:37Z [104] INFO [c3604] {bench} number of operations: 300000
+2023-01-08T18:58:52Z [104] INFO [c3604] {bench} number of operations: 375000
+2023-01-08T18:59:07Z [104] INFO [c3604] {bench} number of operations: 450000
+2023-01-08T18:59:23Z [104] INFO [c3604] {bench} number of operations: 525000
+2023-01-08T18:59:38Z [104] INFO [c3604] {bench} number of operations: 600000
+2023-01-08T18:59:57Z [104] INFO [c3604] {bench} number of operations: 675000
+2023-01-08T19:00:15Z [104] INFO [c3604] {bench} number of operations: 750000
+2023-01-08T19:00:34Z [104] INFO [c3604] {bench} number of operations: 825000
+2023-01-08T19:00:54Z [104] INFO [c3604] {bench} number of operations: 900000
+2023-01-08T19:01:13Z [104] INFO [c3604] {bench} number of operations: 975000
+2023-01-08T19:01:30Z [104] INFO [c3604] {bench} number of operations: 1050000
+2023-01-08T19:01:44Z [104] INFO [c3604] {bench} number of operations: 1125000
+2023-01-08T19:01:59Z [104] INFO [c3604] {bench} number of operations: 1200000
+2023-01-08T19:02:14Z [104] INFO [c3604] {bench} number of operations: 1275000
+2023-01-08T19:02:28Z [104] INFO [c3604] {bench} number of operations: 1350000
+2023-01-08T19:02:43Z [104] INFO [c3604] {bench} number of operations: 1425000
+
+Interval/Percentile:        50.00%        80.00%        85.00%        90.00%        95.00%        99.00%        99.99%
+            1.3827ms      1.3827ms      2.7655ms      2.7655ms      2.7655ms      2.7655ms      5.5310ms     17.9757ms
+            1.6663ms      1.6663ms      1.6663ms      1.6663ms      3.3326ms      3.3326ms      4.9988ms     16.6628ms
+            1.3751ms      1.3751ms      2.7502ms      2.7502ms      2.7502ms      2.7502ms      5.5003ms     16.5009ms
+            1.5802ms      1.5802ms      1.5802ms      3.1605ms      3.1605ms      3.1605ms      4.7407ms     17.3827ms
+            1.4504ms      1.4504ms      2.9009ms      2.9009ms      2.9009ms      2.9009ms      5.8017ms     17.4052ms
+            1.4537ms      1.4537ms      2.9073ms      2.9073ms      2.9073ms      2.9073ms      5.8147ms     18.8977ms
+            1.4541ms      1.4541ms      2.9082ms      2.9082ms      2.9082ms      2.9082ms      5.8164ms     17.4493ms
+            1.5502ms      1.5502ms      1.5502ms      3.1005ms      3.1005ms      3.1005ms      4.6507ms     17.0527ms
+
+Total number of operations: 1500000, runs: 1, keep alive: yes, async: no, batch size: 0, replication factor: 3, number of shards: 10, wait for sync: false, concurrency level (threads): 8
+Test case: crud, complexity: 10, database: '_system', collection: 'ArangoBenchmark'
+Total request/response duration (sum of all threads): 2566.142340 s
+Request/response duration (per thread): 320.767793 s
+Time needed per operation: 0.000214 s
+Time needed per operation per thread: 0.001715 s
+Operations per second rate: 4663.466314
+Elapsed time since start: 321.649155 s
+
+Min request time: 0.2856ms
+Avg request time: 1.7108ms
+Max request time: 83.3139ms
+
+
+```
+
+## Praćenje naredbom `top`
+
+### Prije
+
+Tasks: 354 total,   2 running, 352 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  6,1 us,  2,9 sy,  0,0 ni, 90,3 id,  0,3 wa,  0,0 hi,  0,3 si,  0,0 st
+MiB Mem :   7694,4 total,    455,9 free,   4235,7 used,   3002,9 buff/cache
+MiB Swap:   2048,0 total,   1781,0 free,    267,0 used.   1669,8 avail Mem
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                                                
+  34101 root      20   0  704788 162432  33820 S   2,3   2,1   0:44.16 arangod
+  34182 root      20   0  697620 157548  31644 S   1,7   2,0   0:29.92 arangod
+  34510 root      20   0  831428 163544  36508 S   1,7   2,1   0:35.94 arangod
+  34591 root      20   0  832452 158696  32924 S   1,7   2,0   0:34.21 arangod
+  34025 root      20   0  691988 155924  32988 S   1,3   2,0   0:28.47 arangod
+  34421 root      20   0  794020 153584  31728 S   1,3   1,9   0:30.85 arangod
+  34699 root      20   0  677304  90076  43832 S   1,3   1,1   0:27.67 arangod
+  34770 root      20   0  704200  92160  44928 S   1,3   1,2   0:27.90 arangod
+  34851 root      20   0  736936 101372  47264 S   1,3   1,3   0:34.04 arangod
+  33330 root      20   0  714880  15472   9388 S   0,7   0,2   0:02.76 arangodb
+  33826 root      20   0  715136  16052   9384 S   0,3   0,2   0:04.47 arangodb
+  33565 root      20   0  715136  15028   9196 S   0,0   0,2   0:02.76 arangodb
+
+### Tijekom
+
+```shell
+Tasks: 358 total,   2 running, 356 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 38,9 us, 25,9 sy,  0,0 ni, 27,8 id,  0,1 wa,  0,0 hi,  7,3 si,  0,0 st
+MiB Mem :   7694,4 total,    280,9 free,   4524,8 used,   2888,6 buff/cache
+MiB Swap:   2048,0 total,   1771,8 free,    276,2 used.   1511,7 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                                                
+  37454 root      20   0  141148   3560   3200 S  26,2   0,0   0:30.14 arangobench                                                                            
+  34101 root      20   0  704788 163384  32540 S   1,0   2,1   1:00.11 arangod                                                                                
+  34182 root      20   0  697620 157744  30300 S   0,7   2,0   0:40.01 arangod                                                                                
+  33330 root      20   0  714880  13976   7832 S   0,3   0,2   0:03.70 arangodb                                                                               
+  33826 root      20   0  715136  14640   7864 S   0,3   0,2   0:06.13 arangodb                                                                               
+  34025 root      20   0  694548 155760  31708 S   0,3   2,0   0:38.57 arangod                                                                                
+  34770 root      20   0  705224  92168  43584 S   0,3   1,2   0:37.49 arangod                                                                                
+  34851 root      20   0  737960 101376  45728 S   0,3   1,3   0:45.34 arangod                                                                                
+  33565 root      20   0  715136  13772   7676 S   0,0   0,2   0:03.68 arangodb  
+
+```
+
+### Poslije
+
+```shell
+toni@toni-WRT-WX9:~$ top
+
+top - 20:04:53 up 6 days,  6:47,  1 user,  load average: 2,41, 5,77, 3,67
+Tasks: 356 total,   1 running, 355 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  3,1 us,  2,6 sy,  0,0 ni, 94,2 id,  0,0 wa,  0,0 hi,  0,1 si,  0,0 st
+MiB Mem :   7694,4 total,    359,4 free,   4612,2 used,   2722,8 buff/cache
+MiB Swap:   2048,0 total,   1728,5 free,    319,5 used.   1334,3 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                                                
+  34421 root      20   0 1090500 241900  30940 S   2,0   3,1   6:00.77 arangod                                                                                
+  34101 root      20   0  704788 162684  31728 S   1,7   2,1   1:04.34 arangod                                                                                
+  34510 root      20   0 1136068 301756  34776 S   1,7   3,8   5:40.19 arangod                                                                                
+  34591 root      20   0 1112516 298036  31640 S   1,7   3,8   5:35.52 arangod                                                                                
+  34851 root      20   0  737960 101012  44904 S   1,7   1,3   0:48.05 arangod                                                                                
+  34025 root      20   0  694548 155276  30896 S   1,3   2,0   0:41.23 arangod                                                                                
+  34182 root      20   0  697620 157196  29552 S   1,3   2,0   0:42.65 arangod                                                                                
+  34699 root      20   0  694728  94620  42368 S   1,3   1,2   6:17.18 arangod                                                                                
+  34770 root      20   0  705224  91372  42760 S   1,3   1,2   0:40.06 arangod                                                                                
+  33330 root      20   0  714880  13348   7096 S   0,0   0,2   0:03.94 arangodb                                                                               
+  33565 root      20   0  715136  12672   6908 S   0,0   0,2   0:03.92 arangodb                                                                               
+  33826 root      20   0  715136  13740   7096 S   0,0   0,2   0:06.49 arangodb                                                                               
+
+```
+
+## Praćenje naredbom `docker stats`
+
+### Prije
+
+```shell
+
+CONTAINER ID   NAME                                          CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O         PIDS
+6af4fe4b7a74   adb1-coordinator-37190687-0-172.17.0.1-8529   1.29%     66.76MiB / 7.514GiB   0.87%     4.77MB / 10.1MB   1.37MB / 12.3kB   38
+94daa9ef34a2   adb2-coordinator-fe9c1e58-0-172.17.0.1-8539   1.26%     55.57MiB / 7.514GiB   0.72%     1.3MB / 2.21MB    131kB / 12.3kB    38
+188f92154aee   adb3-coordinator-b489c618-0-172.17.0.1-8549   1.30%     64.97MiB / 7.514GiB   0.84%     1.44MB / 2.31MB   77.8kB / 12.3kB   37
+a2445552ca27   adb1-dbserver-37190687-0-172.17.0.1-8530      1.44%     129.1MiB / 7.514GiB   1.68%     3.87MB / 2.69MB   0B / 6.94MB       51
+6b2ec12fdf4a   adb2-dbserver-fe9c1e58-0-172.17.0.1-8540      1.46%     130.5MiB / 7.514GiB   1.70%     6.54MB / 7.62MB   0B / 6.95MB       51
+3e9dc16111d6   adb3-dbserver-b489c618-0-172.17.0.1-8550      1.47%     125MiB / 7.514GiB     1.62%     2.15MB / 2.9MB    0B / 1.71MB       49
+75e7d3616601   adb1-agent-37190687-0-172.17.0.1-8531         1.36%     127.7MiB / 7.514GiB   1.66%     9.55MB / 7.5MB    0B / 3.24MB       39
+f6cdaf0ec7e6   adb2-agent-fe9c1e58-0-172.17.0.1-8541         2.02%     129.2MiB / 7.514GiB   1.68%     11.5MB / 12.7MB   0B / 3.24MB       39
+58fe81536472   adb3-agent-b489c618-0-172.17.0.1-8551         1.37%     124.7MiB / 7.514GiB   1.62%     4.12MB / 2.7MB    0B / 3.25MB       39
+c2fc39664a28   adb3                                          0.11%     8.328MiB / 7.514GiB   0.11%     1.11MB / 1.37MB   102kB / 0B        14
+f4b91c364728   adb2                                          0.15%     7.586MiB / 7.514GiB   0.10%     687kB / 629kB     0B / 0B           14
+392b57907d3a   adb1                                          0.13%     7.707MiB / 7.514GiB   0.10%     695kB / 646kB     4.1kB / 8.19kB    14
+
+```
+
+### Tijekom
+
+```shell
+
+CONTAINER ID   NAME                                          CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O         PIDS
+6af4fe4b7a74   adb1-coordinator-37190687-0-172.17.0.1-8529   28.05%    66.21MiB / 7.514GiB   0.86%     379MB / 220MB     6.21MB / 12.3kB   52
+94daa9ef34a2   adb2-coordinator-fe9c1e58-0-172.17.0.1-8539   0.49%     51.91MiB / 7.514GiB   0.67%     2.26MB / 3.59MB   131kB / 12.3kB    38
+188f92154aee   adb3-coordinator-b489c618-0-172.17.0.1-8549   110.81%   56.24MiB / 7.514GiB   0.73%     410MB / 605MB     77.8kB / 12.3kB   38
+a2445552ca27   adb1-dbserver-37190687-0-172.17.0.1-8530      95.40%    203MiB / 7.514GiB     2.64%     244MB / 222MB     655kB / 81.9MB    51
+6b2ec12fdf4a   adb2-dbserver-fe9c1e58-0-172.17.0.1-8540      97.52%    203.6MiB / 7.514GiB   2.65%     248MB / 231MB     455kB / 81.9MB    52
+3e9dc16111d6   adb3-dbserver-b489c618-0-172.17.0.1-8550      103.10%   196.8MiB / 7.514GiB   2.56%     258MB / 270MB     36.9kB / 72.1MB   51
+75e7d3616601   adb1-agent-37190687-0-172.17.0.1-8531         0.49%     129.2MiB / 7.514GiB   1.68%     12.8MB / 9.63MB   0B / 4.93MB       39
+f6cdaf0ec7e6   adb2-agent-fe9c1e58-0-172.17.0.1-8541         0.80%     132.2MiB / 7.514GiB   1.72%     20.5MB / 22.4MB   0B / 4.92MB       39
+58fe81536472   adb3-agent-b489c618-0-172.17.0.1-8551         0.48%     126.1MiB / 7.514GiB   1.64%     7.35MB / 4.83MB   4.1kB / 4.93MB    39
+c2fc39664a28   adb3                                          0.00%     8.586MiB / 7.514GiB   0.11%     1.98MB / 2.46MB   102kB / 0B        14
+f4b91c364728   adb2                                          0.00%     8.117MiB / 7.514GiB   0.11%     1.21MB / 1.11MB   0B / 0B           14
+392b57907d3a   adb1                                          0.00%     8.887MiB / 7.514GiB   0.12%     1.21MB / 1.12MB   1.26MB / 8.19kB   14
+
+
+```
+
+### Poslije
+
+```shell
+CONTAINER ID   NAME                                          CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O         PIDS
+6af4fe4b7a74   adb1-coordinator-37190687-0-172.17.0.1-8529   1.34%     62.78MiB / 7.514GiB   0.82%     1.06GB / 598MB    6.21MB / 12.3kB   39
+94daa9ef34a2   adb2-coordinator-fe9c1e58-0-172.17.0.1-8539   1.30%     52.21MiB / 7.514GiB   0.68%     2.37MB / 3.88MB   131kB / 12.3kB    38
+188f92154aee   adb3-coordinator-b489c618-0-172.17.0.1-8549   1.30%     55.87MiB / 7.514GiB   0.73%     1.16GB / 1.71GB   77.8kB / 12.3kB   38
+a2445552ca27   adb1-dbserver-37190687-0-172.17.0.1-8530      1.58%     270MiB / 7.514GiB     3.51%     678MB / 620MB     3.52MB / 226MB    51
+6b2ec12fdf4a   adb2-dbserver-fe9c1e58-0-172.17.0.1-8540      1.62%     269.9MiB / 7.514GiB   3.51%     683MB / 629MB     3.56MB / 226MB    51
+3e9dc16111d6   adb3-dbserver-b489c618-0-172.17.0.1-8550      1.48%     213.5MiB / 7.514GiB   2.77%     726MB / 757MB     57.3kB / 205MB    51
+75e7d3616601   adb1-agent-37190687-0-172.17.0.1-8531         1.35%     129.3MiB / 7.514GiB   1.68%     13.5MB / 10.1MB   0B / 5.23MB       39
+f6cdaf0ec7e6   adb2-agent-fe9c1e58-0-172.17.0.1-8541         2.01%     132.2MiB / 7.514GiB   1.72%     22.4MB / 24.4MB   0B / 5.23MB       39
+58fe81536472   adb3-agent-b489c618-0-172.17.0.1-8551         1.34%     126.3MiB / 7.514GiB   1.64%     8.02MB / 5.28MB   4.1kB / 5.24MB    39
+c2fc39664a28   adb3                                          0.06%     8.559MiB / 7.514GiB   0.11%     2.16MB / 2.69MB   102kB / 0B        14
+f4b91c364728   adb2                                          0.00%     7.609MiB / 7.514GiB   0.10%     1.32MB / 1.21MB   0B / 0B           14
+392b57907d3a   adb1                                          0.00%     8.766MiB / 7.514GiB   0.11%     1.32MB / 1.22MB   1.33MB / 8.19kB   14
+
+```
 
 ## Analiza podataka
 
