@@ -4,9 +4,18 @@
 
 **Datum:** 16. prosinca 2022.
 
+## Tablica sadržaja
+
+1. [ArangoDB](#arangodb)
+2. [Korišteni hardver](#korišteni-hardver)
+3. [Jednoprocesni rad](#jednoprocesni-rad)
+4. [Višeprocesni rad](#višeprocesni-rad)
+5. [Analiza podataka i mjerenja](#analiza-podataka-i-mjerenja)
+6. [Literatura](#literatura)
+
 ## ArangoDB
 
-Općenito o [arangodb](https://www.arangodb.com/) opisat.
+[ArangoDB](https://www.arangodb.com/) je skalabilni sustav za upravljanje bazom podataka temeljenoj na grafovima, sa širokim rasponom značajki i bogatim ekosustavom. ArangoDB omogućuje rad sa strukturiranim, polustrukturiranim i nestrukturiranim podacima u obliku JSON objekata bez specificirane sheme, bez potrebe za povezivanjem tih objekata u graf. Ovisno o potrebama, mogu se kombinirati grafovi i nepovezani podaci. ArangoDB je osmišljen od temelja kako bi podržao više podatkovnih modela s jednim jezikom upita. Također dolazi s integriranom tražilicom za pronalaženje informacija, kao što je pretraživanje cijelog teksta s rangiranjem po relevantnosti. Napisan je u C++ s ciljem visokih performansi, u oblaku ili lokalno.
 
 ## Korišteni hardver
 
@@ -19,7 +28,9 @@ Huawei Matebook 13 2019
 
 ## Jednoprocesni rad
 
-Za početak, pomoću naredbe `docker run`, pokrenuti ćemo Docker kontejner sa željenom slikom. Uz parametar `-e` navodimo varijable okoline, od kojih u našem slučaju imamo `ARANGO_NO_AUTH=1`, kojom osiguravamo da sustav isključi autentifikaciju, koja nam za svrhe testiranja nije potrebna. Nadalje, navođenjem parametra `-d` kontejner će se izvesti u pozadini, dok parametar `--name` koristimo za dodjelu imena kontejneru. Na kraju dodamo ime slike koju želimo pokrenuti unutar kontejnera, dakle [arangodb](https://hub.docker.com/_/arangodb).
+### Konfiguracija sustava
+
+Za početak, pomoću naredbe `docker run`, pokrenuti ćemo Docker kontejner sa željenom slikom. Uz parametar `-e` navodimo varijable okoline, od kojih u našem slučaju imamo `ARANGO_NO_AUTH=1`, kojom osiguravamo da sustav isključi autentifikaciju, koja nam za svrhe testiranja nije potrebna (kod upita za lozinku unesemo prazno). Nadalje, navođenjem parametra `-d` kontejner će se izvesti u pozadini, dok parametar `--name` koristimo za dodjelu imena kontejneru. Na kraju dodamo ime slike koju želimo pokrenuti unutar kontejnera, dakle [arangodb](https://hub.docker.com/_/arangodb):
 
 ```shell
 
@@ -37,9 +48,11 @@ Status: Downloaded newer image for arangodb:latest
 
 ```
 
+### Testiranje i mjerenja
+
 Za testiranje performansi sustava za pohranu podataka koristiti ćemo ugrađeni alat [`arangobench`](https://www.arangodb.com/docs/stable/programs-arangobench.html). Arangobench je klijentski alat koji uspostavlja mrežne veze s ArangoDB poslužiteljem na otprilike isti način kao što bi to radila klijentska aplikacija. Na taj način često daje dovoljno dobre procjene propusnosti i performansi. Pruža različite testne slučajeve koji se mogu izvršiti, a koji odražavaju širi skup slučajeva upotrebe. Korisno je odabrati i pokrenuti testne slučajeve koji su najsličniji tipičnim ili očekivanim radnim opterećenjima.
 
-Koristiti ćemo naredbu `docker exec` uz parametre `-i` i `-t` kako bismo mogli pokretati naredbe unutar navedenog kontejnera, u našem slučaju `arangodb-instance`:
+Najprije ćemo iskoristiti naredbu `docker exec` uz parametre `-i` i `-t` kako bismo mogli interaktivno pokretati naredbe unutar navedenog kontejnera, koji je u našem slučaju `arangodb-instance`:
 
 ```shell
 
@@ -47,15 +60,15 @@ toni@toni-WRT-WX9:~$ docker exec -it arangodb-instance /bin/sh
 
 ```
 
-Tada pokrećemo `arangobench` s sljedećim parametrima i vrijednostima:
+Tada pokrenemo naredbu `arangobench` s sljedećim parametrima i vrijednostima:
 
-- `--test-case crud` - izvodi kombinaciju operacija umetanja, ažuriranja, čitanja i uklanjanja dokumenata. 20% operacija biti će umetanje, 20% operacija biti će ažuriranje, 40% operacija biti će zahtjevi za čitanje, a preostalih 20% operacija otpada na uklanjanje dokumenta
+- `--test-case crud` - izvodi kombinaciju operacija umetanja, ažuriranja, čitanja i uklanjanja dokumenata. 20% operacija biti će umetanje, 20% operacija biti će ažuriranje, 40% operacija biti će zahtjevi za čitanje, a preostalih 20% operacija otpada na uklanjanje dokumenata.
 
-- `requests 1500000` - ukupni broj informacija iznositi će 1500000
+- `requests 1500000` - ukupni broj operacija iznositi će 1500000
 
 - `complexity 10` - broj atributa za stvaranje novih dokumenata i ažuriranje postojećih iznositi će 10
 
-- `histogram.generate` - generiranje histograma
+- `histogram.generate` - generiranje histograma testa
 
 ```shell
 / # arangobench --test-case crud --requests 1500000 --complexity 10 --histogram.generate
@@ -108,13 +121,25 @@ Max request time: 20.0541ms
 
 ```
 
-Opisati malo rezultate, ovi sta pisu
+Možemo vidjeti da nam uz zatraženi histogram arangobench pri završetku benchmarka također ispisuje:
+
+- Postavke koje su korištene pri sprovedbi testa
+- vrstu sprovedenenog testa i njegovu kompleksnost, kao i bazu te kolekciju unutar nje na kojima se test izvršavao
+- Ukupno trajanje poziva/odgovora svih dretvi
+- Ukupno trajanje poziva/odgovora po pojedinačnoj dretvi
+- Vrijeme potrebno za operaciju
+- Vrijeme potrebno za operaciju po dretvi
+- Stopu operacija po sekundi
+- Proteklo vrijeme od početka do kraja testa
+- Minimalno vrijeme poziva
+- Prosječno vrijeme poziva
+- Maksimalno vrijeme poziva
 
 ## Praćenje naredbom `top`
 
-Opisat malo naredbu
+Naredbom `top` interaktivno se prate Linux procesi. Omogućuje dinamičan prikaz sustava u stvarnom vremenu. Prikazuje sažetak informacija o sustavu i popis procesa i dretvi kojima trenutno upravlja jezgra Linuxa. Upotrijebili smo je prije, tijekom i nakon provedbe testiranja, a limitirali na način da prikazuje samo proces `arangod` s pidom 13887:
 
-### Prije
+### Prije testa
 
 ```shell
 toni@toni-WRT-WX9:~$ top -p 13887
@@ -130,7 +155,7 @@ MiB Swap:   2048,0 total,   2019,4 free,     28,6 used.   3762,6 avail Mem
 
 ```
 
-### Tijekom
+### Tijekom testa
 
 ```shell
 toni@toni-WRT-WX9:~$ top -p 13887
@@ -146,7 +171,7 @@ MiB Swap:   2048,0 total,   2019,4 free,     28,6 used.   3657,8 avail Mem
 
 ```
 
-### Nakon
+### Nakon testa
 
 ```shell
 toni@toni-WRT-WX9:~$ top -p 13887
@@ -164,29 +189,30 @@ MiB Swap:   2048,0 total,   2019,4 free,     28,6 used.   3337,7 avail Mem
 
 ## Praćenje naredbom `docker stats`
 
-Opisat malo naredbu
+Naredba `docker stats` prikazuje tok i konzumaciju podataka u stvarnom vremenu za pokrenute kontejnere. Uz ime pokrenutog kontejnera, dodati ćemo i parametar `--no-stream` kojim ćemo isključiti kontinuirani ispis statistike te umjesto toga povući samo prvi rezultat:
 
-### Prije
+### Prije testa
 
 ```shell
-
+toni@toni-WRT-WX9:~$ docker stats arangodb-instance --no-stream
 CONTAINER ID   NAME                CPU %     MEM USAGE / LIMIT     MEM %     NET I/O          BLOCK I/O         PIDS
 620ba3c1fc65   arangodb-instance   1.19%     164.4MiB / 7.514GiB   2.14%     23.1kB / 5.3kB   12.3kB / 3.87MB   60
 
 ```
 
-### Tijekom
+### Tijekom teksta
 
 ```shell
-
+toni@toni-WRT-WX9:~$ docker stats arangodb-instance --no-stream
 CONTAINER ID   NAME                CPU %     MEM USAGE / LIMIT     MEM %     NET I/O        BLOCK I/O        PIDS
 620ba3c1fc65   arangodb-instance   636.59%   313.8MiB / 7.514GiB   4.08%     28.2kB / 7kB   69.6kB / 120MB   63
 
 ```
 
-### Poslije
+### Nakon testa
 
 ```shell
+toni@toni-WRT-WX9:~$ docker stats arangodb-instance --no-stream
 CONTAINER ID   NAME                CPU %     MEM USAGE / LIMIT     MEM %     NET I/O        BLOCK I/O        PIDS
 620ba3c1fc65   arangodb-instance   1.67%     279.2MiB / 7.514GiB   3.63%     28.4kB / 7kB   69.6kB / 186MB   47
 
@@ -194,17 +220,237 @@ CONTAINER ID   NAME                CPU %     MEM USAGE / LIMIT     MEM %     NET
 
 ## Višeprocesni rad
 
-Opisati ArangoDB cluster arhitekturu.
+### Konfiguracija sustava
 
-Opisati ArangoDB Master/follower vezu u clusteru i Leader/follower vezu za replikaciju.
+Sustav za pohranu podataka ArangoDB moguće je skalirati horizontalno povezivanjem nekoliko poslužitelja baze podataka u klaster. Klaster omogućuje bolje performanse i veći kapacitet, te pruža otpornost kroz replikaciju i automatsko prebacivanje u slučaju greške. Isto tako omogućuje implementaciju sustava koji se dinamički povećava i smanjuje prema zahtjevu.
 
-Opisati ArangoDB cluster starter.
+ArangoDB klasteri sastoje se od određenog broja ArangoDB instanci koje međusobno komuniciraju preko mreže. Svaka instanca ima svoju ulogu u klasteru, jednu od sljedećih:
 
-Navesti više načina za postaviti cluster (manualno, starter, ...). Mi ćemo koristiti starter.
+- Agenti - instance unutar agencije, središnjeg mjesta koje se koristi za pohranjivanje konfiguracije klastera, određivanje koordinatora i pružanje usluga sinkronizacije. Kako bi postigli potrebnu toleranciju na pogreške, agenti koriste algoritam Raft Consensus kako bi osigurali upravljanje konfiguracijom bez sukoba unutar klastera.
 
-Opisati konfiguraciju koju ćemo koristiti.
+- Koordinator - kada klijenti komuniciraju s ArangoDB klasterom, komuniciraju s koordinatorima. Ove instance koordiniraju zadatke poput izvršavanja upita i pokretanja Foxx usluga. Oni znaju gdje su podaci pohranjeni i optimiziraju gdje pokrenuti upite koje klijent postavlja. Koordinatori ne sadrže nikakvo stanje, tako da ih se može jednostavno isključiti i ponovno pokrenuti prema potrebi.
 
-Ponovimo test:
+- Server s bazom podataka - instance unutar kojih su zapravo pohranjeni podaci. Svaki od ovih poslužitelja pohranjuje fragmente podataka i koristi sinkronu replikaciju da bi funkcionirao kao voditelj ili sljedbenik za dati fragment. Zatim izvršavaju upite djelomično ili u cjelini kada to zatraži koordinator.
+
+Postoji mnogo mogućih konfiguracija ArangoDB klastera, sama arhitektura je vrlo fleksibilna i može se prilagoditi po želji i potrebi. Postoji i više načina za postavljanje klastera. Mi ćemo koristiti ArangoDB starter za postavljanje klastera uz Docker.
+
+Najprije je potrebno doznati IP adresu Docker hosta naredbom `ip` uz parametar `a`, a zatim je i exportati u varijablu okoline:
+
+```shell
+toni@toni-WRT-WX9:~$ ip a | grep docker
+5: docker0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default 
+    inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
+7: veth3b5d88d@if6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master docker0 state UP group default
+toni@toni-WRT-WX9:~$ export IP=172.17.0.1
+
+```
+
+Nakon toga, sve je spremno za pokretanje prve starter instance (što nije isto što i ArangoDB klaster instanca), koja će postati voditelj unutar starter konfiguracije:
+
+Starter instanca 1
+
+```shell
+toni@toni-WRT-WX9:~$ docker run -it --name=adb1 --rm -p 8528:8528     -v arangodb1:/data     -v /var/run/docker.sock:/var/run/docker.sock     arangodb/arangodb-starter     --starter.address=$IP
+2023-01-08T18:12:31Z |INFO| Starting arangodb version 0.15.5, build 7832707 component=arangodb
+2023-01-08T18:12:33Z |INFO| Using storage engine 'rocksdb' component=arangodb
+2023-01-08T18:12:33Z |INFO| Serving as master with ID '37190687' on 172.17.0.1:8528... component=arangodb
+2023-01-08T18:12:33Z |INFO| Waiting for 3 servers to show up.
+ component=arangodb
+2023-01-08T18:12:33Z |INFO| ArangoDB Starter listening on 0.0.0.0:8528 (172.17.0.1:8528) component=arangodb
+2023-01-08T18:12:33Z |INFO| Use the following commands to start other servers: component=arangodb
+
+docker volume create arangodb2 && \
+    docker run -it --name=adb2 --rm -p 8538:8528 -v arangodb2:/data \
+    -v /var/run/docker.sock:/var/run/docker.sock arangodb/arangodb-starter:latest \
+    --starter.address=172.17.0.1 --starter.join=172.17.0.1
+
+docker volume create arangodb3 && \
+    docker run -it --name=adb3 --rm -p 8548:8528 -v arangodb3:/data \
+    -v /var/run/docker.sock:/var/run/docker.sock arangodb/arangodb-starter:latest \
+    --starter.address=172.17.0.1 --starter.join=172.17.0.1
+
+2023-01-08T18:12:51Z |INFO| Added new peer 'fe9c1e58': 172.17.0.1, portOffset: 0 component=arangodb
+```
+
+Starter nam je sam ispisao naredbe koje je potrebno pokrenuti za pokretanje sljedeće dvije instance, pa ćemo to i učiniti (naravno svaku u zasebnom terminalu):
+
+Starter instanca 2
+
+```shell
+toni@toni-WRT-WX9:~$ docker volume create arangodb2 && \
+>     docker run -it --name=adb2 --rm -p 8538:8528 -v arangodb2:/data \
+>     -v /var/run/docker.sock:/var/run/docker.sock arangodb/arangodb-starter:latest \
+>     --starter.address=172.17.0.1 --starter.join=172.17.0.1
+arangodb2
+2023-01-08T18:12:49Z |INFO| Starting arangodb version 0.15.5, build 7832707 component=arangodb
+2023-01-08T18:12:51Z |INFO| Contacting master http://172.17.0.1:8528... component=arangodb
+2023-01-08T18:12:51Z |INFO| Waiting for 3 servers to show up... component=arangodb
+2023-01-08T18:12:51Z |INFO| ArangoDB Starter listening on 0.0.0.0:8528 (172.17.0.1:8538) component=arangodb
+```
+
+Starter instanca 3
+
+```shell
+toni@toni-WRT-WX9:~$ docker volume create arangodb3 && \
+>     docker run -it --name=adb3 --rm -p 8548:8528 -v arangodb3:/data \
+>     -v /var/run/docker.sock:/var/run/docker.sock arangodb/arangodb-starter:latest \
+>     --starter.address=172.17.0.1 --starter.join=172.17.0.1
+arangodb3
+2023-01-08T18:13:02Z |INFO| Starting arangodb version 0.15.5, build 7832707 component=arangodb
+2023-01-08T18:13:05Z |INFO| Contacting master http://172.17.0.1:8528... component=arangodb
+2023-01-08T18:13:05Z |INFO| Waiting for 3 servers to show up... component=arangodb
+2023-01-08T18:13:05Z |INFO| Serving as slave with ID 'b489c618' on 172.17.0.1:8548... component=arangodb
+2023-01-08T18:13:05Z |INFO| ArangoDB Starter listening on 0.0.0.0:8528 (172.17.0.1:8548) component=arangodb
+2023-01-08T18:13:05Z |INFO| Using storage engine 'rocksdb' component=arangodb
+2023-01-08T18:13:05Z |INFO| agent starting routine component=arangodb type=agent
+2023-01-08T18:13:05Z |INFO| agent started routine component=arangodb type=agent
+2023-01-08T18:13:05Z |INFO| Looking for a running instance of agent on port 8551 component=arangodb type=agent
+2023-01-08T18:13:05Z |INFO| Starting agent on port 8551 component=arangodb type=agent
+2023-01-08T18:13:06Z |INFO| dbserver starting routine component=arangodb type=dbserver
+2023-01-08T18:13:06Z |INFO| dbserver started routine component=arangodb type=dbserver
+2023-01-08T18:13:06Z |INFO| Looking for a running instance of dbserver on port 8550 component=arangodb type=dbserver
+2023-01-08T18:13:06Z |INFO| Starting dbserver on port 8550 component=arangodb type=dbserver
+2023-01-08T18:13:07Z |INFO| server started cid=58fe8153 component=arangodb type=agent
+2023-01-08T18:13:07Z |INFO| coordinator starting routine component=arangodb type=coordinator
+2023-01-08T18:13:07Z |INFO| coordinator started routine component=arangodb type=coordinator
+2023-01-08T18:13:07Z |INFO| Looking for a running instance of coordinator on port 8549 component=arangodb type=coordinator
+2023-01-08T18:13:07Z |INFO| Starting coordinator on port 8549 component=arangodb type=coordinator
+2023-01-08T18:13:07Z |INFO| agent up and running (version 3.10.2). cid=58fe8153 component=arangodb type=agent
+2023-01-08T18:13:08Z |INFO| server started cid=3e9dc161 component=arangodb type=dbserver
+2023-01-08T18:13:09Z |INFO| server started cid=188f9215 component=arangodb type=coordinator
+2023-01-08T18:13:10Z |INFO| Just became master component=arangodb
+2023-01-08T18:13:13Z |INFO| dbserver up and running (version 3.10.2). cid=3e9dc161 component=arangodb type=dbserver
+2023-01-08T18:13:15Z |INFO| coordinator up and running (version 3.10.2). cid=188f9215 component=arangodb type=coordinator
+2023-01-08T18:13:15Z |INFO| Your cluster can now be accessed with a browser at `http://172.17.0.1:8549` or cid=188f9215 component=arangodb type=coordinator
+2023-01-08T18:13:15Z |INFO| using `arangosh --server.endpoint tcp://172.17.0.1:8549`. cid=188f9215 component=arangodb type=coordinator
+
+```
+
+Nakon pokretanja starter instance 3, terminal za instancu 1 i 2 izgleda ovako:
+
+Starter instanca 1
+
+```shell
+toni@toni-WRT-WX9:~$ docker run -it --name=adb1 --rm -p 8528:8528     -v arangodb1:/data     -v /var/run/docker.sock:/var/run/docker.sock     arangodb/arangodb-starter     --starter.address=$IP
+2023-01-08T18:12:31Z |INFO| Starting arangodb version 0.15.5, build 7832707 component=arangodb
+2023-01-08T18:12:33Z |INFO| Using storage engine 'rocksdb' component=arangodb
+2023-01-08T18:12:33Z |INFO| Serving as master with ID '37190687' on 172.17.0.1:8528... component=arangodb
+2023-01-08T18:12:33Z |INFO| Waiting for 3 servers to show up.
+ component=arangodb
+2023-01-08T18:12:33Z |INFO| ArangoDB Starter listening on 0.0.0.0:8528 (172.17.0.1:8528) component=arangodb
+2023-01-08T18:12:33Z |INFO| Use the following commands to start other servers: component=arangodb
+
+docker volume create arangodb2 && \
+    docker run -it --name=adb2 --rm -p 8538:8528 -v arangodb2:/data \
+    -v /var/run/docker.sock:/var/run/docker.sock arangodb/arangodb-starter:latest \
+    --starter.address=172.17.0.1 --starter.join=172.17.0.1
+
+docker volume create arangodb3 && \
+    docker run -it --name=adb3 --rm -p 8548:8528 -v arangodb3:/data \
+    -v /var/run/docker.sock:/var/run/docker.sock arangodb/arangodb-starter:latest \
+    --starter.address=172.17.0.1 --starter.join=172.17.0.1
+
+2023-01-08T18:12:51Z |INFO| Added new peer 'fe9c1e58': 172.17.0.1, portOffset: 0 component=arangodb
+2023-01-08T18:13:05Z |INFO| Added new peer 'b489c618': 172.17.0.1, portOffset: 0 component=arangodb
+2023-01-08T18:13:05Z |INFO| Starting service... component=arangodb
+2023-01-08T18:13:05Z |INFO| agent starting routine component=arangodb type=agent
+2023-01-08T18:13:05Z |INFO| agent started routine component=arangodb type=agent
+2023-01-08T18:13:05Z |INFO| Looking for a running instance of agent on port 8531 component=arangodb type=agent
+2023-01-08T18:13:05Z |INFO| Starting agent on port 8531 component=arangodb type=agent
+2023-01-08T18:13:06Z |INFO| dbserver starting routine component=arangodb type=dbserver
+2023-01-08T18:13:06Z |INFO| dbserver started routine component=arangodb type=dbserver
+2023-01-08T18:13:06Z |INFO| Looking for a running instance of dbserver on port 8530 component=arangodb type=dbserver
+2023-01-08T18:13:06Z |INFO| Starting dbserver on port 8530 component=arangodb type=dbserver
+2023-01-08T18:13:07Z |INFO| server started cid=75e7d361 component=arangodb type=agent
+2023-01-08T18:13:07Z |INFO| coordinator starting routine component=arangodb type=coordinator
+2023-01-08T18:13:07Z |INFO| coordinator started routine component=arangodb type=coordinator
+2023-01-08T18:13:07Z |INFO| Looking for a running instance of coordinator on port 8529 component=arangodb type=coordinator
+2023-01-08T18:13:07Z |INFO| Starting coordinator on port 8529 component=arangodb type=coordinator
+2023-01-08T18:13:08Z |INFO| agent up and running (version 3.10.2). cid=75e7d361 component=arangodb type=agent
+2023-01-08T18:13:08Z |INFO| server started cid=a2445552 component=arangodb type=dbserver
+2023-01-08T18:13:09Z |INFO| server started cid=6af4fe4b component=arangodb type=coordinator
+2023-01-08T18:13:13Z |INFO| dbserver up and running (version 3.10.2). cid=a2445552 component=arangodb type=dbserver
+2023-01-08T18:13:15Z |INFO| coordinator up and running (version 3.10.2). cid=6af4fe4b component=arangodb type=coordinator
+2023-01-08T18:13:15Z |INFO| Your cluster can now be accessed with a browser at `http://172.17.0.1:8529` or cid=6af4fe4b component=arangodb type=coordinator
+2023-01-08T18:13:15Z |INFO| using `arangosh --server.endpoint tcp://172.17.0.1:8529`. cid=6af4fe4b component=arangodb type=coordinator
+
+```
+
+Starter instanca 2
+
+```shell
+
+toni@toni-WRT-WX9:~$ docker volume create arangodb2 && \
+>     docker run -it --name=adb2 --rm -p 8538:8528 -v arangodb2:/data \
+>     -v /var/run/docker.sock:/var/run/docker.sock arangodb/arangodb-starter:latest \
+>     --starter.address=172.17.0.1 --starter.join=172.17.0.1
+arangodb2
+2023-01-08T18:12:49Z |INFO| Starting arangodb version 0.15.5, build 7832707 component=arangodb
+2023-01-08T18:12:51Z |INFO| Contacting master http://172.17.0.1:8528... component=arangodb
+2023-01-08T18:12:51Z |INFO| Waiting for 3 servers to show up... component=arangodb
+2023-01-08T18:12:51Z |INFO| ArangoDB Starter listening on 0.0.0.0:8528 (172.17.0.1:8538) component=arangodb
+2023-01-08T18:13:05Z |INFO| Serving as slave with ID 'fe9c1e58' on 172.17.0.1:8538... component=arangodb
+2023-01-08T18:13:05Z |INFO| Using storage engine 'rocksdb' component=arangodb
+2023-01-08T18:13:05Z |INFO| agent starting routine component=arangodb type=agent
+2023-01-08T18:13:05Z |INFO| agent started routine component=arangodb type=agent
+2023-01-08T18:13:05Z |INFO| Looking for a running instance of agent on port 8541 component=arangodb type=agent
+2023-01-08T18:13:05Z |INFO| Starting agent on port 8541 component=arangodb type=agent
+2023-01-08T18:13:06Z |INFO| dbserver starting routine component=arangodb type=dbserver
+2023-01-08T18:13:06Z |INFO| dbserver started routine component=arangodb type=dbserver
+2023-01-08T18:13:06Z |INFO| Looking for a running instance of dbserver on port 8540 component=arangodb type=dbserver
+2023-01-08T18:13:06Z |INFO| Starting dbserver on port 8540 component=arangodb type=dbserver
+2023-01-08T18:13:07Z |INFO| server started cid=f6cdaf0e component=arangodb type=agent
+2023-01-08T18:13:07Z |INFO| coordinator starting routine component=arangodb type=coordinator
+2023-01-08T18:13:07Z |INFO| coordinator started routine component=arangodb type=coordinator
+2023-01-08T18:13:07Z |INFO| Looking for a running instance of coordinator on port 8539 component=arangodb type=coordinator
+2023-01-08T18:13:07Z |INFO| Starting coordinator on port 8539 component=arangodb type=coordinator
+2023-01-08T18:13:07Z |INFO| agent up and running (version 3.10.2). cid=f6cdaf0e component=arangodb type=agent
+2023-01-08T18:13:08Z |INFO| server started cid=6b2ec12f component=arangodb type=dbserver
+2023-01-08T18:13:09Z |INFO| server started cid=94daa9ef component=arangodb type=coordinator
+2023-01-08T18:13:13Z |INFO| dbserver up and running (version 3.10.2). cid=6b2ec12f component=arangodb type=dbserver
+2023-01-08T18:13:14Z |INFO| coordinator up and running (version 3.10.2). cid=94daa9ef component=arangodb type=coordinator
+2023-01-08T18:13:14Z |INFO| Your cluster can now be accessed with a browser at `http://172.17.0.1:8539` or cid=94daa9ef component=arangodb type=coordinator
+2023-01-08T18:13:14Z |INFO| using `arangosh --server.endpoint tcp://172.17.0.1:8539`. cid=94daa9ef component=arangodb type=coordinator
+
+```
+
+Treća starter instanca ispisala je i adresu preko koje možemo pristupiti ArangoDB klasteru:
+
+> 2023-01-08T18:13:15Z |INFO| Your cluster can now be accessed with a browser at `http://172.17.0.1:8529` or cid=6af4fe4b component=arangodb type=coordinator
+
+Moguće ju je posjetiti unutar web preglednika za pristup web sučelju ArangoDB klaster konfiguracije, a kasnije ćemo je i proslijediti *arangobenchu* kao parametar.
+
+Da pojasnimo, pokrenuli smo tri različite ***starter*** instance u tri različita Docker kontejnera, te smo na taj način simulirali tri različita hosta. Nakon toga, svaka od starter instanca pokrenula je još tri Docker kontejnera od kojih svaki pokreće jednu klaster instancu, i to s ulogom agenta, koordinatora i baze podataka, respektivno.
+
+Zaključujemo da bismo trenutno trebali imati pokrenuto ukupno dvanaest Docker kontejnera (tri starter instance + devet klaster instanci), a to možemo i provjeriti naredbom `docker ps`:
+
+```shell
+toni@toni-WRT-WX9:~$ docker ps
+CONTAINER ID   IMAGE                              COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+6af4fe4b7a74   arangodb/arangodb:latest           "/usr/sbin/arangod -…"   24 minutes ago   Up 24 minutes   0.0.0.0:8529->8529/tcp                      adb1-coordinator-37190687-0-172.17.0.1-8529
+94daa9ef34a2   arangodb/arangodb:latest           "/usr/sbin/arangod -…"   24 minutes ago   Up 24 minutes   8529/tcp, 0.0.0.0:8539->8539/tcp            adb2-coordinator-fe9c1e58-0-172.17.0.1-8539
+188f92154aee   arangodb/arangodb:latest           "/usr/sbin/arangod -…"   24 minutes ago   Up 24 minutes   8529/tcp, 0.0.0.0:8549->8549/tcp            adb3-coordinator-b489c618-0-172.17.0.1-8549
+a2445552ca27   arangodb/arangodb:latest           "/usr/sbin/arangod -…"   24 minutes ago   Up 24 minutes   8529/tcp, 0.0.0.0:8530->8530/tcp            adb1-dbserver-37190687-0-172.17.0.1-8530
+6b2ec12fdf4a   arangodb/arangodb:latest           "/usr/sbin/arangod -…"   24 minutes ago   Up 24 minutes   8529/tcp, 0.0.0.0:8540->8540/tcp            adb2-dbserver-fe9c1e58-0-172.17.0.1-8540
+3e9dc16111d6   arangodb/arangodb:latest           "/usr/sbin/arangod -…"   24 minutes ago   Up 24 minutes   8529/tcp, 0.0.0.0:8550->8550/tcp            adb3-dbserver-b489c618-0-172.17.0.1-8550
+75e7d3616601   arangodb/arangodb:latest           "/usr/sbin/arangod -…"   24 minutes ago   Up 24 minutes   8529/tcp, 0.0.0.0:8531->8531/tcp            adb1-agent-37190687-0-172.17.0.1-8531
+f6cdaf0ec7e6   arangodb/arangodb:latest           "/usr/sbin/arangod -…"   24 minutes ago   Up 24 minutes   8529/tcp, 0.0.0.0:8541->8541/tcp            adb2-agent-fe9c1e58-0-172.17.0.1-8541
+58fe81536472   arangodb/arangodb:latest           "/usr/sbin/arangod -…"   24 minutes ago   Up 24 minutes   8529/tcp, 0.0.0.0:8551->8551/tcp            adb3-agent-b489c618-0-172.17.0.1-8551
+c2fc39664a28   arangodb/arangodb-starter:latest   "/app/arangodb --sta…"   24 minutes ago   Up 24 minutes   0.0.0.0:8548->8528/tcp, :::8548->8528/tcp   adb3
+f4b91c364728   arangodb/arangodb-starter:latest   "/app/arangodb --sta…"   24 minutes ago   Up 24 minutes   0.0.0.0:8538->8528/tcp, :::8538->8528/tcp   adb2
+392b57907d3a   arangodb/arangodb-starter          "/app/arangodb --sta…"   24 minutes ago   Up 24 minutes   0.0.0.0:8528->8528/tcp, :::8528->8528/tcp   adb1
+
+```
+
+### Testiranje
+
+Sada možemo ponoviti testiranje koje smo proveli i na ArangoDB jednoprocesnom sustavu, uz neke dodatne parametre s vrijednostima:
+
+- `--server.endpoint tcp://172.17.0.1:8549` - adresa klastera nad kojim želimo vršiti testiranja
+
+- `--number-of-shards 10` - : broj fragmenata za kolekcije koje je stvorio arangobench iznositi će 10
+
+- `--replication-factor 3` - broj replika za svaki fragment u kolekcijama koje je izradio arangobench iznositi će 3
 
 ```shell
 / # arangobench \
@@ -262,12 +508,13 @@ Min request time: 0.2856ms
 Avg request time: 1.7108ms
 Max request time: 83.3139ms
 
-
 ```
 
 ## Praćenje naredbom `top`
 
-### Prije
+### Prije testa
+
+```shell
 
 Tasks: 354 total,   2 running, 352 sleeping,   0 stopped,   0 zombie
 %Cpu(s):  6,1 us,  2,9 sy,  0,0 ni, 90,3 id,  0,3 wa,  0,0 hi,  0,3 si,  0,0 st
@@ -288,7 +535,9 @@ MiB Swap:   2048,0 total,   1781,0 free,    267,0 used.   1669,8 avail Mem
   33826 root      20   0  715136  16052   9384 S   0,3   0,2   0:04.47 arangodb
   33565 root      20   0  715136  15028   9196 S   0,0   0,2   0:02.76 arangodb
 
-### Tijekom
+```
+
+### Tijekom testa
 
 ```shell
 Tasks: 358 total,   2 running, 356 sleeping,   0 stopped,   0 zombie
@@ -309,7 +558,7 @@ MiB Swap:   2048,0 total,   1771,8 free,    276,2 used.   1511,7 avail Mem
 
 ```
 
-### Poslije
+### Nakon testa
 
 ```shell
 toni@toni-WRT-WX9:~$ top
@@ -338,7 +587,7 @@ MiB Swap:   2048,0 total,   1728,5 free,    319,5 used.   1334,3 avail Mem
 
 ## Praćenje naredbom `docker stats`
 
-### Prije
+### Prije testa
 
 ```shell
 
@@ -358,7 +607,7 @@ f4b91c364728   adb2                                          0.15%     7.586MiB 
 
 ```
 
-### Tijekom
+### Tijekom testa
 
 ```shell
 
@@ -379,7 +628,7 @@ f4b91c364728   adb2                                          0.00%     8.117MiB 
 
 ```
 
-### Poslije
+### Nakon testa
 
 ```shell
 CONTAINER ID   NAME                                          CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O         PIDS
@@ -398,6 +647,15 @@ f4b91c364728   adb2                                          0.00%     7.609MiB 
 
 ```
 
-## Analiza podataka
+## Analiza podataka i mjerenja
+
+|Header1 |Header2  | Header3|
+--- | --- | ---|
+|data1|data2|data3|
+|data11|data12|data13|
 
 ## Literatura
+
+- [1] <https://www.arangodb.com/docs/stable/>
+- [2] <https://docs.docker.com/engine/reference/commandline/stats/>
+- [3] <https://github.com/arangodb-helper/arangodb>
