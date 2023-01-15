@@ -667,10 +667,7 @@ f4b91c364728   adb2                                          0.00%     7.609MiB 
 
 ### Jednoprocesni rad
 
-| Mjerenje | CPU %  | MEM % | MEM USAGE / LIMIT | NET I/O | BLOCK I/O|
-| ---|:---: | :---:| :---:|  :---:|  :---:|
-| top          | 600% | 132% |  132% |  132% |  132% |
-| docker stats | 636% | 437% |  132% |  132% |  132% |
+Uz zauzeće
 
 ### Usporedba jednoprocesnog i višeprocesnog rada
 
