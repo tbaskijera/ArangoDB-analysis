@@ -125,19 +125,19 @@ Možemo vidjeti da nam uz zatraženi histogram arangobench pri završetku benchm
 
 - Postavke koje su korištene pri sprovedbi testa
 - vrstu sprovedenenog testa i njegovu kompleksnost, kao i bazu te kolekciju unutar nje na kojima se test izvršavao
-- Ukupno trajanje poziva/odgovora svih dretvi
-- Ukupno trajanje poziva/odgovora po pojedinačnoj dretvi
+- Ukupno trajanje zahtjeva/odgovora svih niti
+- Ukupno trajanje zahtjeva/odgovora po pojedinačnoj niti
 - Vrijeme potrebno za operaciju
-- Vrijeme potrebno za operaciju po dretvi
+- Vrijeme potrebno za operaciju po niti
 - Stopu operacija po sekundi
 - Proteklo vrijeme od početka do kraja testa
-- Minimalno vrijeme poziva
-- Prosječno vrijeme poziva
-- Maksimalno vrijeme poziva
+- Minimalno vrijeme zahtjeva
+- Prosječno vrijeme zahtjeva
+- Maksimalno vrijeme zahtjeva
 
 ## Praćenje naredbom `top`
 
-Naredbom `top` interaktivno se prate Linux procesi. Omogućuje dinamičan prikaz sustava u stvarnom vremenu. Prikazuje sažetak informacija o sustavu i popis procesa i dretvi kojima trenutno upravlja jezgra Linuxa. Upotrijebili smo je prije, tijekom i nakon provedbe testiranja. Kada pokrenemo naredbu unutar interaktivnog sučelja komande top potrebno je unijeti `o` ili `O` te zatim upisati `COMMAND=arango` čime će se prikazati svi procesi koji unutar sebe sadrže string "arango":
+Naredbom `top` interaktivno se prate Linux procesi. Omogućuje dinamičan prikaz sustava u stvarnom vremenu. Prikazuje sažetak informacija o sustavu i popis procesa i niti kojima trenutno upravlja jezgra Linuxa. Upotrijebili smo je prije, tijekom i nakon provedbe testiranja. Kada pokrenemo naredbu unutar interaktivnog sučelja komande top potrebno je unijeti `o` ili `O` te zatim upisati `COMMAND=arango` čime će se prikazati svi procesi koji unutar sebe sadrže string "arango":
 
 ### Prije testa
 
@@ -452,7 +452,7 @@ toni@toni-WRT-WX9:~$ docker exec -it 6af4fe4b7a74 /bin/sh
 
 ```
 
-Sada možemo ponoviti testiranje koje smo proveli i na ArangoDB jednoprocesnom sustavu, uz neke dodatne parametre s vrijednostima:
+Sada možemo ponoviti isto testiranje koje smo proveli i na ArangoDB jednoprocesnom sustavu, uz što ćemo dodatno uključiti replikaciju i particioniranje podataka sustava za pohranu podataka:
 
 - `--server.endpoint tcp://172.17.0.1:8549` - adresa klastera nad kojim želimo vršiti testiranja
 
@@ -667,6 +667,8 @@ f4b91c364728   adb2                                          0.00%     7.609MiB 
 
 ## Analiza testiranja i mjerenja
 
+Sva mjerenja odnose se na sustav prilikom opterećenja. Za višeprocesni način rada zbrojeni su podaci pojedinačnih procesa.
+
 ### Analiza jednoprocesnog rada
 
 Prema naredbi `top`, prilikom opterećenja (testiranja) baze u jednoprocesnom načinu rada zauzeto je oko 6 procesnih niti, od njih ukupno 8, dakle 75% ukupne procesorske moći. Zauzeće memorije iznosi 4.1%. Isto tako vidimo da tijekom opterećenja load average u zadnjih 60 sekundi iznosi 1,99, dakle oko 2 procesa čeka na izvođenje u svakom trenutku.
@@ -678,16 +680,73 @@ Naredba `docker stats` pokazuje da je prilikom opterećenja zauzeto oko 6.4 proc
 - opterećenju diska od 279.2 MiB
 - optrećenju mreže od 28.4kB/7kB
 
-sustav za pohranu podataka ArangoDB vrši oko 69.6kB / 186 MB čitanja / zapisivanja po sekundi.
+sustav za pohranu podataka ArangoDB vrši 69.6kB/120 MB čitanja/zapisivanja po sekundi.
 
 ### Analiza višeprocesnog rada
 
-Prema naredbi `top`, prilikom opterećenja (testiranja) baze u višeprocesnom načinu rada zauzeto je oko 2.2 procesnih niti, od njih ukupno 8, dakle
+Prema naredbi `top`, prilikom opterećenja (testiranja) baze u višeprocesnom načinu rada zauzeto je oko 4.15 procesnih niti, od njih ukupno 8, dakle oko 52% ukupne procesorske moći. Zauzeće memorije iznosi 19,2%. Isto tako vidimo da tijekom opterečenja load average u zadnjih 60 sekundi iznosi 10,01, dakle oko 10 procesa čeka na izvođenje u svakom trenutku.
+
+Naredba `docker stats` pokazuje da je prilikom opterećenja u višeprocesnom načinu rada zauzeto oko 4.38 procesnih niti od ukupnih 8. Prema tome i ostalim podacima, možemo zaključiti da pri:
+
+- optrećenju procesora od 54.75%
+- zauzeću memorije 15.49%
+- opterećenju diska od 1190 MiB
+- optrećenju mreže od 1586MB/1593MB
+
+sustav za pohranu podataka ArangoDB vrši 15MB/673MB čitanja/zapisivanja po sekundi.
 
 ### Usporedba jednoprocesnog i višeprocesnog načina rada
+
+Navedene podatke možemo usporediti u tabličnom obliku:
+
+Naredba `top`:
+
+| Metrika | Jednoprocesni rad  | Višeprocesni rad|
+| ---------|:-------------------: | :----------------:|
+| CPU%| 75% | 52% |
+| MEM% | 4.1% | 19.2% |
+| Load AVG | 1.99 | 10.01 |
+
+Naredba `docker stats`:
+
+| Metrika | Jednoprocesni rad  | Višeprocesni rad|
+| ---------|:-------------------: | :----------------:|
+| CPU% | 80% | 54.75% |
+| MEM%| 3.63% | 15.49% |
+| MEM USAGE| 279.2 MiB | 1190 MiB |
+| NET I/O | 28.4 kB / 7kB | 1586 MB / 1593 MB |
+| BLOCK I/O | 69.6 kB / 120 MB  | 15 MB / 673 MB |
+
+Iz navedenih podataka, možemo zaključiti da jednoprocesni način rada zahtijeva oko 25% više procesorske moći, a koristi oko 13.5% memorije manje u odnosu na višeprocesni prilikom opterećenja, što se odražava i u postotku opterećenosti diska. Isto je tako vidljivo kako u višeprocesnom načinu rada oko 8 procesa više čeka na izvođenje. U istom je promet kroz mrežu znatno veći zbog međusobne komunikacije procesa. Također je i broj zapisivanja i čitanja znatno veći u višeprocesnom načinu rada, kako smo uključili replikaciju i particioniranje podataka.
+
+Nadalje, možemo usporediti i metrike arangobencha:
+
+| Metrika | Jednoprocesni rad  | Višeprocesni rad|
+| ---------|:-------------------: | :----------------:|
+| Ukupno trajanje zahtjeva/odgovora svih niti | 335.82 s | 2566.14 s |
+| Ukupno trajanje zahtjeva/odgovora po pojedinačnoj niti | 41.98 s | 320.76 s |
+| Potrebno vrijeme po operaciji | 0.000028 s | 0.000214 s |
+| Potrebno vrijeme po operaciji, po niti | 0.000227 s | 0.001715 s |
+| Stopa operacija po sekundi | 35277.750092 | 4663.466314 |
+| Minimalno vrijeme zahtjeva | 0.0601ms | 0.2856ms |
+| Prosječno vrijeme zahtjeva | 0.2239ms | 1.7108ms |
+| Maksimalno vrijeme zahtjeva | 20.0541ms | 83.3139ms |
+| Trajanje testa | 42.519718 s | 321.649155 s |
 
 ## Literatura
 
 - [1] <https://www.arangodb.com/docs/stable/>
 - [2] <https://docs.docker.com/engine/reference/commandline/stats/>
 - [3] <https://github.com/arangodb-helper/arangodb>
+
+- Postavke koje su korištene pri sprovedbi testa
+- vrstu sprovedenenog testa i njegovu kompleksnost, kao i bazu te kolekciju unutar nje na kojima se test izvršavao
+- Ukupno trajanje zahtjeva/odgovora svih niti
+- Ukupno trajanje zahtjeva/odgovora po pojedinačnoj niti
+- Vrijeme potrebno za operaciju
+- Vrijeme potrebno za operaciju po niti
+- Stopu operacija po sekundi
+- Proteklo vrijeme od početka do kraja testa
+- Minimalno vrijeme zahtjeva
+- Prosječno vrijeme zahtjeva
+- Maksimalno vrijeme zahtjeva

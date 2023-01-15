@@ -125,19 +125,19 @@ Možemo vidjeti da nam uz zatraženi histogram arangobench pri završetku benchm
 
 - Postavke koje su korištene pri sprovedbi testa
 - vrstu sprovedenenog testa i njegovu kompleksnost, kao i bazu te kolekciju unutar nje na kojima se test izvršavao
-- Ukupno trajanje poziva/odgovora svih dretvi
-- Ukupno trajanje poziva/odgovora po pojedinačnoj dretvi
+- Ukupno trajanje zahtjeva/odgovora svih niti
+- Ukupno trajanje zahtjeva/odgovora po pojedinačnoj niti
 - Vrijeme potrebno za operaciju
-- Vrijeme potrebno za operaciju po dretvi
+- Vrijeme potrebno za operaciju po niti
 - Stopu operacija po sekundi
 - Proteklo vrijeme od početka do kraja testa
-- Minimalno vrijeme poziva
-- Prosječno vrijeme poziva
-- Maksimalno vrijeme poziva
+- Minimalno vrijeme zahtjeva
+- Prosječno vrijeme zahtjeva
+- Maksimalno vrijeme zahtjeva
 
 ## Praćenje naredbom `top`
 
-Naredbom `top` interaktivno se prate Linux procesi. Omogućuje dinamičan prikaz sustava u stvarnom vremenu. Prikazuje sažetak informacija o sustavu i popis procesa i dretvi kojima trenutno upravlja jezgra Linuxa. Upotrijebili smo je prije, tijekom i nakon provedbe testiranja. Kada pokrenemo naredbu unutar interaktivnog sučelja komande top potrebno je unijeti `o` ili `O` te zatim upisati `COMMAND=arango` čime će se prikazati svi procesi koji unutar sebe sadrže string "arango":
+Naredbom `top` interaktivno se prate Linux procesi. Omogućuje dinamičan prikaz sustava u stvarnom vremenu. Prikazuje sažetak informacija o sustavu i popis procesa i niti kojima trenutno upravlja jezgra Linuxa. Upotrijebili smo je prije, tijekom i nakon provedbe testiranja. Kada pokrenemo naredbu unutar interaktivnog sučelja komande top potrebno je unijeti `o` ili `O` te zatim upisati `COMMAND=arango` čime će se prikazati svi procesi koji unutar sebe sadrže string "arango":
 
 ### Prije testa
 
@@ -249,7 +249,7 @@ toni@toni-WRT-WX9:~$ export IP=172.17.0.1
 
 Nakon toga, sve je spremno za pokretanje prve starter instance (što nije isto što i ArangoDB klaster instanca), koja će postati voditelj unutar starter konfiguracije:
 
-Starter instanca adb1
+Starter instanca `adb1`:
 
 ```shell
 toni@toni-WRT-WX9:~$ docker run -it --name=adb1 --rm -p 8528:8528     -v arangodb1:/data     -v /var/run/docker.sock:/var/run/docker.sock     arangodb/arangodb-starter     --starter.address=$IP
@@ -275,7 +275,7 @@ docker volume create arangodb3 && \
 
 Starter nam je sam ispisao naredbe koje je potrebno pokrenuti za pokretanje sljedeće dvije instance, pa ćemo to i učiniti (naravno svaku u zasebnom terminalu):
 
-Starter instanca adb2
+Starter instanca `adb2`:
 
 ```shell
 toni@toni-WRT-WX9:~$ docker volume create arangodb2 && \
@@ -289,7 +289,7 @@ arangodb2
 2023-01-08T18:12:51Z |INFO| ArangoDB Starter listening on 0.0.0.0:8528 (172.17.0.1:8538) component=arangodb
 ```
 
-Starter instanca adb3
+Starter instanca `adb3`:
 
 ```shell
 toni@toni-WRT-WX9:~$ docker volume create arangodb3 && \
@@ -327,9 +327,9 @@ arangodb3
 
 ```
 
-Nakon pokretanja starter instance adb3, terminal za instancu adb1 i adb2 izgleda ovako:
+Nakon pokretanja starter instance `adb3`, terminal za instancu `adb1` i `adb2` izgleda ovako:
 
-Starter instanca adb1
+Starter instanca `adb1`:
 
 ```shell
 toni@toni-WRT-WX9:~$ docker run -it --name=adb1 --rm -p 8528:8528     -v arangodb1:/data     -v /var/run/docker.sock:/var/run/docker.sock     arangodb/arangodb-starter     --starter.address=$IP
@@ -377,7 +377,7 @@ docker volume create arangodb3 && \
 
 ```
 
-Starter instanca adb2
+Starter instanca `adb2`:
 
 ```shell
 
@@ -440,7 +440,6 @@ f6cdaf0ec7e6   arangodb/arangodb:latest           "/usr/sbin/arangod -…"   24 
 c2fc39664a28   arangodb/arangodb-starter:latest   "/app/arangodb --sta…"   24 minutes ago   Up 24 minutes   0.0.0.0:8548->8528/tcp, :::8548->8528/tcp   adb3
 f4b91c364728   arangodb/arangodb-starter:latest   "/app/arangodb --sta…"   24 minutes ago   Up 24 minutes   0.0.0.0:8538->8528/tcp, :::8538->8528/tcp   adb2
 392b57907d3a   arangodb/arangodb-starter          "/app/arangodb --sta…"   24 minutes ago   Up 24 minutes   0.0.0.0:8528->8528/tcp, :::8528->8528/tcp   adb1
-
 ```
 
 ### Testiranje
@@ -449,7 +448,6 @@ Arangobench, kada se koristi za testiranje klastera, potrebno je pokrenuti u jed
 
 ```shell
 toni@toni-WRT-WX9:~$ docker exec -it 6af4fe4b7a74 /bin/sh
-
 ```
 
 Sada možemo ponoviti testiranje koje smo proveli i na ArangoDB jednoprocesnom sustavu, uz neke dodatne parametre s vrijednostima:
@@ -515,7 +513,6 @@ Elapsed time since start: 321.649155 s
 Min request time: 0.2856ms
 Avg request time: 1.7108ms
 Max request time: 83.3139ms
-
 ```
 
 ## Praćenje naredbom `top`
@@ -599,7 +596,6 @@ MiB Swap:   2048,0 total,   2047,2 free,      0,8 used.   3157,4 avail Mem
   61652 root      20   0  715392  15988   9212 S   0,0   0,2   0:01.33 arangodb                                                                               
   61913 root      20   0  715136  15344   9096 S   0,0   0,2   0:00.89 arangodb                                                                               
   62154 root      20   0  714880  15372   9096 S   0,0   0,2   0:00.83 arangodb    
-
 ```
 
 ## Praćenje naredbom `docker stats`
@@ -621,7 +617,6 @@ f6cdaf0ec7e6   adb2-agent-fe9c1e58-0-172.17.0.1-8541         2.02%     129.2MiB 
 c2fc39664a28   adb3                                          0.11%     8.328MiB / 7.514GiB   0.11%     1.11MB / 1.37MB   102kB / 0B        14
 f4b91c364728   adb2                                          0.15%     7.586MiB / 7.514GiB   0.10%     687kB / 629kB     0B / 0B           14
 392b57907d3a   adb1                                          0.13%     7.707MiB / 7.514GiB   0.10%     695kB / 646kB     4.1kB / 8.19kB    14
-
 ```
 
 ### Tijekom testa
@@ -641,8 +636,6 @@ f6cdaf0ec7e6   adb2-agent-fe9c1e58-0-172.17.0.1-8541         0.80%     132.2MiB 
 c2fc39664a28   adb3                                          0.00%     8.586MiB / 7.514GiB   0.11%     1.98MB / 2.46MB   102kB / 0B        14
 f4b91c364728   adb2                                          0.00%     8.117MiB / 7.514GiB   0.11%     1.21MB / 1.11MB   0B / 0B           14
 392b57907d3a   adb1                                          0.00%     8.887MiB / 7.514GiB   0.12%     1.21MB / 1.12MB   1.26MB / 8.19kB   14
-
-
 ```
 
 ### Nakon testa
@@ -662,10 +655,11 @@ f6cdaf0ec7e6   adb2-agent-fe9c1e58-0-172.17.0.1-8541         2.01%     132.2MiB 
 c2fc39664a28   adb3                                          0.06%     8.559MiB / 7.514GiB   0.11%     2.16MB / 2.69MB   102kB / 0B        14
 f4b91c364728   adb2                                          0.00%     7.609MiB / 7.514GiB   0.10%     1.32MB / 1.21MB   0B / 0B           14
 392b57907d3a   adb1                                          0.00%     8.766MiB / 7.514GiB   0.11%     1.32MB / 1.22MB   1.33MB / 8.19kB   14
-
 ```
 
 ## Analiza testiranja i mjerenja
+
+Sva mjerenja odnose se na sustav prilikom opterećenja. Za višeprocesni način rada zbrojeni su podaci pojedinačnih procesa.
 
 ### Analiza jednoprocesnog rada
 
@@ -678,11 +672,11 @@ Naredba `docker stats` pokazuje da je prilikom opterećenja zauzeto oko 6.4 proc
 - opterećenju diska od 279.2 MiB
 - optrećenju mreže od 28.4kB/7kB
 
-sustav za pohranu podataka ArangoDB vrši oko 69.6kB/120 MB čitanja/zapisivanja po sekundi.
+sustav za pohranu podataka ArangoDB vrši 69.6 kB /120 MB čitanja / zapisivanja po sekundi.
 
 ### Analiza višeprocesnog rada
 
-Prema naredbi `top`, prilikom opterećenja (testiranja) baze u višeprocesnom načinu rada zauzeto je oko 4.15 procesnih niti, od njih ukupno 8, dakle oko 52% ukupne procesorske moći. Zauzeće memorije iznosi 19,2%. Isto tako vidimo da tijekom opterečenja load average u zadnjih 60 sekundi iznosi 10,01, dakle oko 10 procesa čeka na izvođenje u svakom trenutku.
+Prema naredbi `top`, prilikom opterećenja (testiranja) baze u višeprocesnom načinu rada zauzeto je oko 4.15 procesnih niti, od njih ukupno 8, dakle oko 52% ukupne procesorske moći. Zauzeće memorije iznosi 19.2%. Isto tako vidimo da tijekom opterečenja load average u zadnjih 60 sekundi iznosi 10.01, dakle oko 10 procesa čeka na izvođenje u svakom trenutku.
 
 Naredba `docker stats` pokazuje da je prilikom opterećenja u višeprocesnom načinu rada zauzeto oko 4.38 procesnih niti od ukupnih 8. Prema tome i ostalim podacima, možemo zaključiti da pri:
 
@@ -691,11 +685,47 @@ Naredba `docker stats` pokazuje da je prilikom opterećenja u višeprocesnom na�
 - opterećenju diska od 1190 MiB
 - optrećenju mreže od 1586MB/1593MB
 
-sustav za pohranu podataka ArangoDB vrši oko 15MB/673MB čitanja/zapisivanja po sekundi.
+sustav za pohranu podataka ArangoDB vrši 15 MB /673 MB čitanja / zapisivanja po sekundi.
 
 ### Usporedba jednoprocesnog i višeprocesnog načina rada
 
-Iz gore navedenih podataka, možemo zaključiti da
+Navedene podatke možemo usporediti u tabličnom obliku:
+
+Naredba `top`:
+
+| Metrika | Jednoprocesni rad  | Višeprocesni rad|
+| ---------|:-------------------: | :----------------:|
+| CPU%| 75% | 52% |
+| MEM% | 4.1% | 19.2% |
+| Load AVG | 1.99 | 10.01 |
+
+Naredba `docker stats`:
+
+| Metrika | Jednoprocesni rad  | Višeprocesni rad|
+| ---------|:-------------------: | :----------------:|
+| CPU% | 80% | 54.75%
+| MEM%| 3.63% | 15.49% |
+| MEM USAGE| 279.2 MiB | 1190 MiB |
+| NET I/O | 28.4 kB / 7kB | 1586 MB / 1593 MB |
+| BLOCK I/O | 69.6 kB / 120 MB  | 15 MB / 673 MB |
+
+Iz navedenih podataka, možemo zaključiti da jednoprocesni način rada zahtijeva oko 25% više procesorske moći, a koristi oko 13.5% memorije manje u odnosu na višeprocesni prilikom opterećenja, što se odražava i u postotku opterećenosti diska. Isto je tako vidljivo kako u višeprocesnom načinu rada oko 8 procesa više čeka na izvođenje. U istom je promet kroz mrežu znatno veći zbog međusobne komunikacije procesa. Također je i broj zapisivanja i čitanja znatno veći u višeprocesnom načinu rada, kako smo uključili replikaciju i particioniranje podataka.
+
+Nadalje, možemo usporediti i metrike arangobencha:
+
+| Metrika | Jednoprocesni rad  | Višeprocesni rad|
+| ---------|:-------------------: | :----------------:|
+| Ukupno trajanje zahtjeva/odgovora svih niti | 335.82 s | 2566.14 s |
+| Ukupno trajanje zahtjeva/odgovora po pojedinačnoj niti | 41.98 s | 320.76 s |
+| Potrebno vrijeme po operaciji | 0.000028 s | 0.000214 s |
+| Potrebno vrijeme po operaciji, po niti | 0.000227 s | 0.001715 s |
+| Stopa operacija po sekundi | 35277.750092 | 4663.466314 |
+| Minimalno vrijeme zahtjeva | 0.0601ms | 0.2856ms |
+| Prosječno vrijeme zahtjeva | 0.2239ms | 1.7108ms |
+| Maksimalno vrijeme zahtjeva | 20.0541ms | 83.3139ms |
+| Trajanje testa | 42.519718 s | 321.649155 s |
+
+Iz navedenih podataka možemo vidjeti kako je pri jednoprocesni način rada brži u svakoj metrici koju arangobench ispisuje, ali to je i očekivano s obzirom da smo u višeprocesnom načinu rada uključili replikaciju i particioniranje podataka.
 
 ## Literatura
 
