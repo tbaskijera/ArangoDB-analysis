@@ -271,7 +271,6 @@ docker volume create arangodb3 && \
     -v /var/run/docker.sock:/var/run/docker.sock arangodb/arangodb-starter:latest \
     --starter.address=172.17.0.1 --starter.join=172.17.0.1
 
-2023-01-08T18:12:51Z |INFO| Added new peer 'fe9c1e58': 172.17.0.1, portOffset: 0 component=arangodb
 ```
 
 Starter nam je sam ispisao naredbe koje je potrebno pokrenuti za pokretanje sljedeće dvije instance, pa ćemo to i učiniti (naravno svaku u zasebnom terminalu):
@@ -416,7 +415,7 @@ arangodb2
 
 ```
 
-Treća starter instanca ispisala je i adresu preko koje možemo pristupiti ArangoDB klasteru:
+Svaka starter instanca ispisala je i adresu preko koje možemo pristupiti ArangoDB klasteru:
 
 > 2023-01-08T18:13:15Z |INFO| Your cluster can now be accessed with a browser at `http://172.17.0.1:8529` or cid=6af4fe4b component=arangodb type=coordinator
 
@@ -526,26 +525,27 @@ U višeprocesnom radu unutar interaktivnog sučelja komande top potrebno je unij
 ### Prije testa
 
 ```shell
+toni@toni-WRT-WX9:~$ top
 
-Tasks: 354 total,   2 running, 352 sleeping,   0 stopped,   0 zombie
-%Cpu(s):  6,1 us,  2,9 sy,  0,0 ni, 90,3 id,  0,3 wa,  0,0 hi,  0,3 si,  0,0 st
-MiB Mem :   7694,4 total,    455,9 free,   4235,7 used,   3002,9 buff/cache
-MiB Swap:   2048,0 total,   1781,0 free,    267,0 used.   1669,8 avail Mem
+top - 20:31:32 up 5 days,  3:09,  1 user,  load average: 1,00, 0,95, 0,74
+Tasks: 328 total,   1 running, 327 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  2,9 us,  2,2 sy,  0,0 ni, 94,7 id,  0,1 wa,  0,0 hi,  0,1 si,  0,0 st
+MiB Mem :   7694,4 total,   1896,0 free,   2596,0 used,   3202,4 buff/cache
+MiB Swap:   2048,0 total,   2047,2 free,      0,8 used.   3476,8 avail Mem 
 
     PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                                                
-  34101 root      20   0  704788 162432  33820 S   2,3   2,1   0:44.16 arangod
-  34182 root      20   0  697620 157548  31644 S   1,7   2,0   0:29.92 arangod
-  34510 root      20   0  831428 163544  36508 S   1,7   2,1   0:35.94 arangod
-  34591 root      20   0  832452 158696  32924 S   1,7   2,0   0:34.21 arangod
-  34025 root      20   0  691988 155924  32988 S   1,3   2,0   0:28.47 arangod
-  34421 root      20   0  794020 153584  31728 S   1,3   1,9   0:30.85 arangod
-  34699 root      20   0  677304  90076  43832 S   1,3   1,1   0:27.67 arangod
-  34770 root      20   0  704200  92160  44928 S   1,3   1,2   0:27.90 arangod
-  34851 root      20   0  736936 101372  47264 S   1,3   1,3   0:34.04 arangod
-  33330 root      20   0  714880  15472   9388 S   0,7   0,2   0:02.76 arangodb
-  33826 root      20   0  715136  16052   9384 S   0,3   0,2   0:04.47 arangodb
-  33565 root      20   0  715136  15028   9196 S   0,0   0,2   0:02.76 arangodb
-
+  62413 root      20   0  694548 156412  30732 S   2,0   2,0   0:05.63 arangod                                                                                
+  62802 root      20   0  831940 159824  35056 S   2,0   2,0   0:04.93 arangod                                                                                
+  62796 root      20   0  779684 153260  30892 S   1,6   1,9   0:04.35 arangod                                                                                
+  62926 root      20   0  827844 155304  32052 S   1,6   2,0   0:04.76 arangod                                                                                
+  62421 root      20   0  695572 152984  31168 S   1,3   1,9   0:03.85 arangod                                                                                
+  62522 root      20   0  694548 152800  29552 S   1,3   1,9   0:04.47 arangod                                                                                
+  63062 root      20   0  694096  98968  43316 S   1,3   1,3   0:03.88 arangod                                                                                
+  63080 root      20   0  719712 102148  43884 S   1,3   1,3   0:04.55 arangod                                                                                
+  63173 root      20   0  687696  97320  42508 S   1,3   1,2   0:03.72 arangod                                                                                
+  61913 root      20   0  715136  15152   9096 S   0,3   0,2   0:00.57 arangodb                                                                               
+  61652 root      20   0  715392  15552   9204 S   0,0   0,2   0:00.81 arangodb                                                                               
+  62154 root      20   0  714880  15432   9096 S   0,0   0,2   0:00.53 arangodb     
 ```
 
 ### Tijekom testa
@@ -553,24 +553,26 @@ MiB Swap:   2048,0 total,   1781,0 free,    267,0 used.   1669,8 avail Mem
 ```shell
 toni@toni-WRT-WX9:~$ top
 
-Tasks: 358 total,   2 running, 356 sleeping,   0 stopped,   0 zombie
-%Cpu(s): 40,5 us, 26,3 sy,  0,0 ni, 27,8 id,  0,1 wa,  0,0 hi,  7,3 si,  0,0 st
-MiB Mem :   7694,4 total,    280,9 free,   4524,8 used,   3724,0 buff/cache
-MiB Swap:   2048,0 total,   1771,8 free,    276,2 used.   1511,7 avail Mem 
+top - 20:34:14 up 5 days,  3:12,  1 user,  load average: 10,01, 4,36, 2,01
+Tasks: 313 total,   1 running, 312 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 39,5 us, 25,5 sy,  0,0 ni, 27,6 id,  0,1 wa,  0,0 hi,  7,3 si,  0,0 st
+MiB Mem :   7694,4 total,   1486,2 free,   2824,8 used,   3383,3 buff/cache
+MiB Swap:   2048,0 total,   2047,2 free,      0,8 used.   3288,0 avail Mem 
 
     PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                                                
-  34101 root      20   0  906708 219988  34260 S  94,0   2,1   1:00.11 arangod                                                                                
-  34182 root      20   0  911316 216680  31668 S  93,7   2,0   0:40.01 arangod                                                                                
-  37454 root      20   0  141148   3568   3200 S  26,2   0,0   0:30.14 arangobench                                                                            
-  34025 root      20   0  712980 159300  31444 S   0,7   2,0   0:38.57 arangod                                                                                
-  34770 root      20   0  697936  98964  42332 S   0,7   1,3   0:37.49 arangod                                                                                
-  34851 root      20   0  698132 151920  29568 S   0,3   1,9   0:45.34 arangod
-  34858 root      20   0  664820 155000  28968 S   0,3   2,0   0:46.54 arangod
-  34854 root      20   0  693840  99020  42452 S   0,3   1,3   0:45.64 arangod
-  33330 root      20   0  714880  14260   7832 S   0,0   0,2   0:03.70 arangodb                                                                               
-  33826 root      20   0  715136  14720   7864 S   0,0   0,2   0:06.13 arangodb                                                                               
-  33565 root      20   0  715136  15220   7676 S   0,0   0,2   0:03.68 arangodb  
-
+  63062 root      20   0  714592 103592  44092 S 105,3   1,3   2:05.86 arangod                                                                                
+  62802 root      20   0  920004 232256  35064 S  99,7   2,9   1:57.59 arangod                                                                                
+  62796 root      20   0  927684 243128  31956 S  92,7   3,1   1:48.97 arangod                                                                                
+  62926 root      20   0  914884 229216  32296 S  87,4   2,9   1:47.62 arangod                                                                                
+  63660 root      20   0  141148   3776   3352 S  26,6   0,0   0:30.14 arangobench                                                                            
+  62413 root      20   0  702740 158400  30796 S   1,0   2,0   0:07.69 arangod                                                                                
+  63080 root      20   0  719712 103556  44120 S   0,7   1,3   0:05.83 arangod                                                                                
+  63173 root      20   0  687696  98108  42836 S   0,7   1,2   0:04.96 arangod                                                                                
+  62421 root      20   0  695572 153688  31228 S   0,3   2,0   0:05.15 arangod                                                                                
+  62522 root      20   0  694548 153396  29676 S   0,3   1,9   0:05.77 arangod                                                                                
+  61652 root      20   0  715392  16304   9204 S   0,0   0,2   0:00.95 arangodb                                                                               
+  61913 root      20   0  715136  15064   9096 S   0,0   0,2   0:00.69 arangodb                                                                               
+  62154 root      20   0  714880  15388   9096 S   0,0   0,2   0:00.62 arangodb  
 ```
 
 ### Nakon testa
@@ -578,25 +580,25 @@ MiB Swap:   2048,0 total,   1771,8 free,    276,2 used.   1511,7 avail Mem
 ```shell
 toni@toni-WRT-WX9:~$ top
 
-top - 20:04:53 up 6 days,  6:47,  1 user,  load average: 2,41, 5,77, 3,67
-Tasks: 356 total,   1 running, 355 sleeping,   0 stopped,   0 zombie
-%Cpu(s):  3,1 us,  2,6 sy,  0,0 ni, 94,2 id,  0,0 wa,  0,0 hi,  0,1 si,  0,0 st
-MiB Mem :   7694,4 total,    359,4 free,   4612,2 used,   2722,8 buff/cache
-MiB Swap:   2048,0 total,   1728,5 free,    319,5 used.   1334,3 avail Mem 
+top - 20:39:18 up 5 days,  3:17,  1 user,  load average: 2,07, 5,56, 3,48
+Tasks: 313 total,   1 running, 312 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  2,1 us,  1,7 sy,  0,0 ni, 95,9 id,  0,1 wa,  0,0 hi,  0,1 si,  0,0 st
+MiB Mem :   7694,4 total,   1430,5 free,   3024,5 used,   3239,4 buff/cache
+MiB Swap:   2048,0 total,   2047,2 free,      0,8 used.   3157,4 avail Mem 
 
     PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                                                
-  34421 root      20   0 1090500 241900  30940 S   2,0   3,1   6:00.77 arangod                                                                                
-  34101 root      20   0  704788 162684  31728 S   1,7   2,1   1:04.34 arangod                                                                                
-  34510 root      20   0 1136068 301756  34776 S   1,7   3,8   5:40.19 arangod                                                                                
-  34591 root      20   0 1112516 298036  31640 S   1,7   3,8   5:35.52 arangod                                                                                
-  34851 root      20   0  737960 101012  44904 S   1,7   1,3   0:48.05 arangod                                                                                
-  34025 root      20   0  694548 155276  30896 S   1,3   2,0   0:41.23 arangod                                                                                
-  34182 root      20   0  697620 157196  29552 S   1,3   2,0   0:42.65 arangod                                                                                
-  34699 root      20   0  694728  94620  42368 S   1,3   1,2   6:17.18 arangod                                                                                
-  34770 root      20   0  705224  91372  42760 S   1,3   1,2   0:40.06 arangod                                                                                
-  33330 root      20   0  714880  13348   7096 S   0,0   0,2   0:03.94 arangodb                                                                               
-  33565 root      20   0  715136  12672   6908 S   0,0   0,2   0:03.92 arangodb                                                                               
-  33826 root      20   0  715136  13740   7096 S   0,0   0,2   0:06.49 arangodb                                                                               
+  62413 root      20   0  702740 156160  28628 S   2,0   2,0   0:11.67 arangod                                                                                
+  62926 root      20   0 1100228 294004  30664 S   2,0   3,7   4:42.25 arangod                                                                                
+  62796 root      20   0 1097668 297628  29972 S   1,7   3,8   4:46.00 arangod                                                                                
+  63080 root      20   0  719712 102168  42036 S   1,7   1,3   0:08.42 arangod                                                                                
+  62421 root      20   0  695572 151640  29048 S   1,3   1,9   0:07.80 arangod                                                                                
+  62522 root      20   0  694548 150916  27432 S   1,3   1,9   0:08.44 arangod                                                                                
+  62802 root      20   0 1118148 297440  33328 S   1,3   3,8   5:08.17 arangod                                                                                
+  63062 root      20   0  714592 101420  41868 S   1,3   1,3   5:30.70 arangod                                                                                
+  63173 root      20   0  687696  96468  40724 S   1,3   1,2   0:07.46 arangod                                                                                
+  61652 root      20   0  715392  15988   9212 S   0,0   0,2   0:01.33 arangodb                                                                               
+  61913 root      20   0  715136  15344   9096 S   0,0   0,2   0:00.89 arangodb                                                                               
+  62154 root      20   0  714880  15372   9096 S   0,0   0,2   0:00.83 arangodb    
 
 ```
 
@@ -665,18 +667,24 @@ f4b91c364728   adb2                                          0.00%     7.609MiB 
 
 ## Analiza testiranja i mjerenja
 
-### Jednoprocesni rad
+### Analiza jednoprocesnog rada
 
-Uz zauzeće
+Prema naredbi `top`, prilikom opterećenja (testiranja) baze u jednoprocesnom načinu rada zauzeto je oko 6 procesnih niti, od njih ukupno 8, dakle 75% ukupne procesorske moći. Zauzeće memorije iznosi 4.1%. Isto tako vidimo da tijekom opterećenja load average u zadnjih 60 sekundi iznosi 1,99, dakle oko 2 procesa čeka na izvođenje u svakom trenutku.
 
-### Usporedba jednoprocesnog i višeprocesnog rada
+Naredba `docker stats` pokazuje da je prilikom opterećenja zauzeto oko 6.4 procesnih niti od ukupnih 8. Prema tome i ostalim podacima, možemo zaključiti da pri:
 
-#### Zauzeće procesora
+- optrećenju procesora od 80%
+- zauzeću memorije 3.63%
+- opterećenju diska od 279.2 MiB
+- optrećenju mreže od 28.4kB/7kB
 
-| Mjerenje | Jednoprocesni rad  | Višeprocesni rad|
-| ---------|:-------------------: | :----------------:|
-| top          | 600% | 132% |
-| docker stats | 636% | 437% |
+sustav za pohranu podataka ArangoDB vrši oko 69.6kB / 186 MB čitanja / zapisivanja po sekundi.
+
+### Analiza višeprocesnog rada
+
+Prema naredbi `top`, prilikom opterećenja (testiranja) baze u višeprocesnom načinu rada zauzeto je oko 2.2 procesnih niti, od njih ukupno 8, dakle
+
+### Usporedba jednoprocesnog i višeprocesnog načina rada
 
 ## Literatura
 
